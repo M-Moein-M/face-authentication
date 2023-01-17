@@ -9,8 +9,11 @@ from django.shortcuts import render
 
 from django.core.files.storage import FileSystemStorage
 
+from apiapp.models import Verified
+
 import dlib
 import numpy as np
+
 
 class VerificationCheck(APIView):
     """
@@ -29,8 +32,6 @@ class NewFaceRegister(View):
         if request.FILES['facefile']:
             upload = request.FILES['facefile']
             self.register_uploaded_face(upload, request.POST.get("secrete"))
-
-
 
             return HttpResponseRedirect('/face')
         else:
@@ -52,7 +53,14 @@ class NewFaceRegister(View):
             return
 
         print(feat.dtype)
-        print(feat.to)
+
+        rec = Verified(
+            name='testname',
+            email='testname@gmail.com',
+            feat=feat.tobytes()
+        )
+        rec.save()
+
         print(feat)
 
     @staticmethod
