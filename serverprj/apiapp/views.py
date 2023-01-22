@@ -11,6 +11,8 @@ from django.core.files.storage import FileSystemStorage
 
 from apiapp.models import Verified
 
+import apiapp.utils as utils
+
 import dlib
 import numpy as np
 
@@ -21,9 +23,17 @@ class VerificationCheck(APIView):
     """
 
     def post(self, request, format=None):
-        print(request.data)
+        posted = np.array(request.data.getlist("feat")).astype(np.float64)
+        print(posted)
+        print(request.data.get("device"))
         print('- ' * 20)
-        return Response({"hasperm": "yes"}, status=status.HTTP_200_OK)
+
+        user = utils.match(posted.astype(np.float64))
+        if not user:
+            return Response({"hasperm": "no"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({"hasperm": "yes", "name": user.name},
+                            status=status.HTTP_200_OK)
 
 
 class NewFaceRegister(View):
@@ -62,6 +72,7 @@ class NewFaceRegister(View):
         rec.save()
 
         print(feat)
+        fss.delete(file_name)
 
     @staticmethod
     def get_feature(p):
@@ -86,4 +97,4 @@ class NewFaceRegister(View):
             # Compute the 128D vector
             face_descriptor = facerec.compute_face_descriptor(img, shape)
             v = np.array(face_descriptor)
-            return v
+            return v.astype(np.float64)
