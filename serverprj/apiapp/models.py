@@ -10,3 +10,14 @@ class Verified(models.Model):
     device = models.CharField(
         max_length=100,
         default="maindevice_DkCZVCJpTUYTfoHchNWP")
+
+
+class Log(models.Model):
+    LOGING_TYPE = "Login"
+    type = models.CharField(max_length=200)
+    verified = models.OneToOneField(
+        Verified,
+        on_delete=models.CASCADE,
+        primary_key=True
+    )
+    created = models.DateTimeField(auto_now_add=True)

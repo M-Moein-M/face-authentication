@@ -1,6 +1,6 @@
 import numpy as np
 import os
-from apiapp.models import Verified
+from apiapp.models import Verified, Log
 from notificationapi_python_server_sdk import (notificationapi)
 import datetime
 from django.contrib.auth.models import User
@@ -24,8 +24,15 @@ def match(posted):
     return None
 
 
+def log_login(user):
+    """ insert new Log model entry """
+    log = Log(verified=user, type=Log.LOGING_TYPE)
+    log.save()
+
+
 def notify_login(user):
     """ send emails to user and admins registered """
+    log_login(user)
     info = {"name": user.name,
             "email": user.email,
             "time": str(datetime.datetime.now()),
