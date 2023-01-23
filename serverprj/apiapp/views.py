@@ -1,3 +1,5 @@
+import os
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -40,10 +42,9 @@ class VerificationCheck(APIView):
 class NewFaceRegister(View):
 
     def post(self, request, *args, **kwargs):
-        if request.FILES['facefile']:
-            upload = request.FILES['facefile']
-            self.register_uploaded_face(upload, request.POST.get("secrete"))
+        if request.FILES['facefile'] and request.POST.get("secrete") == str(os.getenv("FACE_REG_SEC")):
 
+            self.register_uploaded_face(request)
             return HttpResponseRedirect('/face')
         else:
             return HttpResponse("ERROR")
@@ -51,8 +52,9 @@ class NewFaceRegister(View):
     def get(self, request):
         return render(request, 'new_face_register.html')
 
-    def register_uploaded_face(self, upload, secrete):
+    def register_uploaded_face(self, request):
         """ Extract new features and save new record in databse """
+        upload = request.FILES['facefile']
         file_name = "new_face.jpg"
         fss = FileSystemStorage()
         fss.delete(file_name)
@@ -66,8 +68,9 @@ class NewFaceRegister(View):
         print(feat.dtype)
 
         rec = Verified(
-            name='testname',
-            email='testname@gmail.com',
+            name=request.POST.get("name"),
+            email=request.POST.get("email"),
+            device=request.POST.get("device"),
             feat=feat.tobytes()
         )
         rec.save()
