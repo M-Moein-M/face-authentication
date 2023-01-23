@@ -4,13 +4,17 @@ import dlib
 import glob
 import numpy as np
 
+import requests
+
 from picamera import PiCamera
 from time import sleep
 
+SERVER_PERMISSION_CHECK_URL = 'http://192.168.1.105:8000/api'
 
-predictor_path = 'shape_predictor_5_face_landmarks.dat'  # sys.argv[1]
-face_rec_model_path = 'dlib_face_recognition_resnet_model_v1.dat'  # sys.argv[2]
-faces_folder_path = 'samples'  # sys.argv[3]
+root_dir = '/home/beorn/board/'
+predictor_path = root_dir + 'shape_predictor_5_face_landmarks.dat'
+face_rec_model_path = root_dir + 'dlib_face_recognition_resnet_model_v1.dat'
+faces_folder_path = root_dir + 'samples'
 img_path = os.path.join(faces_folder_path, "captured.jpg")
 
 # Load all the models we need: a detector to find the faces, a shape predictor
@@ -45,14 +49,36 @@ def process_img():
         face_descriptor = facerec.compute_face_descriptor(img, shape)
 
         v = np.array(face_descriptor)
-        print(f'v shape: {v.shape}')
-        print(v)
+        return v
+
+
+def has_permission(feat):
+    """
+    Check with server whether <feat> is one one the registered faces
+    """
+    print("Sinding features to server")
+    data = {'feat': feat, 'device': 'maindevice'}
+    r = requests.post(SERVER_PERMISSION_CHECK_URL, data)
+    if (str(r.status_code)).startswith('5'):
+        print("Server Error")
+    else:
+        print(r.json())
+        print(r.status_code)
 
 
 camera = PiCamera()
 
 while True:
-    camera.capture(img_path)
-    process_img()
+    # camera.capture(img_path)
+    feat = process_img()
+    
+    if feat is None:
+        # no faces detected
+        continue
+
+
+    print('checking permission...')
+    has_permission(feat)
+
     input("press Enter to capture an image")
 
