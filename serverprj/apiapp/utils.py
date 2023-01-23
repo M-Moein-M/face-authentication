@@ -4,6 +4,7 @@ from apiapp.models import Verified, Log
 from notificationapi_python_server_sdk import (notificationapi)
 import datetime
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 THRESHOLD = .6
@@ -15,8 +16,6 @@ def match(posted):
     """
     for row in Verified.objects.all():
         reg = np.frombuffer(row.feat, dtype=np.float64)
-        print(row.email)
-        print(reg.shape, posted.shape)
         norm = np.linalg.norm(reg - posted)
         if norm < THRESHOLD:
             return row
@@ -26,7 +25,7 @@ def match(posted):
 
 def log_login(user):
     """ insert new Log model entry """
-    log = Log(verified=user, type=Log.LOGING_TYPE)
+    log = Log(verified=user, type=Log.LOGING_TYPE, created=timezone.now())
     log.save()
 
 
