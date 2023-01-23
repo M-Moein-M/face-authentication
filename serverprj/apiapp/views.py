@@ -32,6 +32,7 @@ class VerificationCheck(APIView):
         if not user:
             return Response({"hasperm": "no"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
+            utils.notify_login(user)
             return Response({"hasperm": "yes", "name": user.name},
                             status=status.HTTP_200_OK)
 
