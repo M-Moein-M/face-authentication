@@ -56,8 +56,9 @@ def has_permission(feat):
     """
     Check with server whether <feat> is one one the registered faces
     """
+    DEVICE_ID = "RASPI_MAIN_DEVICE"
     print("Sinding features to server")
-    data = {'feat': feat, 'device': 'maindevice'}
+    data = {'feat': feat, 'device': DEVICE_ID}
     r = requests.post(SERVER_PERMISSION_CHECK_URL, data)
     if (str(r.status_code)).startswith('5'):
         print("Server Error")
