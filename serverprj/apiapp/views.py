@@ -27,10 +27,9 @@ class VerificationCheck(APIView):
     def post(self, request, format=None):
         posted = np.array(request.data.getlist("feat")).astype(np.float64)
         print(posted)
-        print(request.data.get("device"))
         print('- ' * 20)
 
-        user = utils.match(posted.astype(np.float64))
+        user = utils.match(posted.astype(np.float64), request.data.get("device"))
         if not user:
             return Response({"hasperm": "no"}, status=status.HTTP_401_UNAUTHORIZED)
         else:

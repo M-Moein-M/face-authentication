@@ -10,16 +10,15 @@ from django.utils import timezone
 THRESHOLD = .6
 
 
-def match(posted):
+def match(posted, device):
     """ checks the posted feat with all the records in db
         :returns corresponding row of the match or None
     """
-    for row in Verified.objects.all():
+    for row in Verified.objects.filter(device=device):
         reg = np.frombuffer(row.feat, dtype=np.float64)
         norm = np.linalg.norm(reg - posted)
         if norm < THRESHOLD:
             return row
-
     return None
 
 
