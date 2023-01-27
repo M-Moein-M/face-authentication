@@ -57,14 +57,28 @@ def has_permission(feat):
     Check with server whether <feat> is one one the registered faces
     """
     DEVICE_ID = "RASPI_MAIN_DEVICE"
-    print("Sinding features to server")
-    data = {'feat': feat, 'device': DEVICE_ID}
+    print("Sending features to server")
+    data = {'feat': feat,
+            'device': DEVICE_ID}
     r = requests.post(SERVER_PERMISSION_CHECK_URL, data)
     if (str(r.status_code)).startswith('5'):
         print("Server Error")
-    else:
-        print(r.json())
-        print(r.status_code)
+    elif r.status_code == 200:
+        grant_access(r)
+    elif r.status_code == 401:
+        deny_access(r)
+
+
+def deny_access(req):
+    """ handles access denial routine """
+    print(req.json())
+    print("Access denied")
+
+
+def grant_access(req):
+    """ handles access grant routine """
+    print(req.json())
+    print("Access granted")
 
 
 camera = PiCamera()
