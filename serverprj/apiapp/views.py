@@ -31,8 +31,10 @@ class VerificationCheck(APIView):
 
         user = utils.match(posted.astype(np.float64), request.data.get("device"))
         if not user:
+            print(f"User not found")
             return Response({"hasperm": "no"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
+            print(f"User found: Name: {user.name}\tEmail: {user.email}")
             utils.notify_login(user)
             return Response({"hasperm": "yes", "name": user.name},
                             status=status.HTTP_200_OK)

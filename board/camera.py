@@ -1,15 +1,17 @@
+import time
 import sys
 import os
 import dlib
 import glob
 import numpy as np
+from subprocess import call
 
 import requests
 
 from picamera import PiCamera
 from time import sleep
 
-SERVER_PERMISSION_CHECK_URL = 'http://192.168.1.105:8000/api'
+SERVER_PERMISSION_CHECK_URL = 'http://192.168.1.106:8000/api'
 
 root_dir = '/home/beorn/board/'
 predictor_path = root_dir + 'shape_predictor_5_face_landmarks.dat'
@@ -57,43 +59,57 @@ def has_permission(feat):
     Check with server whether <feat> is one one the registered faces
     """
     DEVICE_ID = "RASPI_MAIN_DEVICE"
-    print("Sending features to server")
-    data = {'feat': feat,
-            'device': DEVICE_ID}
+    data = {'feat': feat, 'device': DEVICE_ID}
+    print("Sending request")
+    print(data)
     r = requests.post(SERVER_PERMISSION_CHECK_URL, data)
     if (str(r.status_code)).startswith('5'):
         print("Server Error")
-    elif r.status_code == 200:
-        grant_access(r)
-    elif r.status_code == 401:
-        deny_access(r)
+    else:
+        print("Response received")
+        print(r.json())
+        print(r.status_code)
+        if r.status_code == 200:
+            grant_access(r)
+        if r.status_code == 401:
+            deny_access(r)
 
 
 def deny_access(req):
     """ handles access denial routine """
-    print(req.json())
-    print("Access denied")
+    msg = "Access denied"
+    speak(msg)
 
 
 def grant_access(req):
     """ handles access grant routine """
-    print(req.json())
-    print("Access granted")
+    msg = "Access granted"
+    speak(msg)
+
+
+def speak(msg):
+    """ outputs the msg using espeak command"""
+    call([f'espeak -g 50 "{msg}" 2>/dev/null'], shell=True)
+    print(msg)
 
 
 camera = PiCamera()
 
 while True:
-    # camera.capture(img_path)
+    to = 15
+    print(f"Pausing face detection for {to} seconds")
+    time.sleep(to)
+
+    print("Capturing new image")
+    camera.capture(img_path)
     feat = process_img()
     
     if feat is None:
         # no faces detected
+        print("No faces detected")
+        print("Resuming face detection")
         continue
 
-
-    print('checking permission...')
+    print("Features extracted. Requesting authentication check")
     has_permission(feat)
-
-    input("press Enter to capture an image")
 
