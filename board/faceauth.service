@@ -1,0 +1,21 @@
+# Place this file in /etc/systemd/system/ directory
+# You can work with this service using "systemctl"
+
+
+[Unit]
+Description=Face Authentication Service Using Camera
+After=multi-user.target
+Requires=network.target
+
+[Service]
+Type=idle
+
+User=beorn
+ExecStart=/usr/bin/python3 /home/beorn/board/camera.py
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+
